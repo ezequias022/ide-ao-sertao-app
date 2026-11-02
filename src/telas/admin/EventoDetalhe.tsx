@@ -28,6 +28,7 @@ import {
   ellipsisVertical,
   locationOutline,
   peopleOutline,
+  listOutline,
   podiumOutline,
 } from 'ionicons/icons';
 import { repositorio, type Grupo, type Pessoa, type StatusEvento } from '../../dados';
@@ -175,13 +176,45 @@ export default function EventoDetalhe() {
   function remover(grupo: Grupo) {
     void alerta({
       header: `Remover o ${grupo.nome}?`,
-      message: 'Só dá para remover um grupo que ainda não tem conversões registradas.',
+      message: 'Só dá para remover um grupo sem conversões. Se for um teste, use antes "Apagar conversões do grupo".',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
           text: 'Remover',
           role: 'destructive',
           handler: () => void executar(() => repositorio.removerGrupo(grupo.id), 'Grupo removido.', 'remover o grupo'),
+        },
+      ],
+    });
+  }
+
+  function apagarConversoes(grupo: Grupo) {
+    void alerta({
+      header: `Apagar as conversões do ${grupo.nome}?`,
+      message:
+        'Todas as pessoas registradas por este grupo saem da lista e do placar, para sempre. Use para limpar um teste. Para confirmar, digite APAGAR.',
+      inputs: [{ name: 'confirmacao', type: 'text', placeholder: 'APAGAR', attributes: { autocapitalize: 'characters' } }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Apagar tudo',
+          role: 'destructive',
+          handler: (valores: { confirmacao?: string }) => {
+            if ((valores.confirmacao ?? '').trim().toUpperCase() !== 'APAGAR') {
+              avisar('Não apagado: a confirmação não confere.', 'danger');
+              return true;
+            }
+            void (async () => {
+              try {
+                const n = await repositorio.apagarConversoesDoGrupo(grupo.id);
+                await recarregar();
+                avisar(n === 1 ? '1 conversão apagada.' : `${n} conversões apagadas.`);
+              } catch (e) {
+                avisar(traduzirErro(e, 'apagar as conversões').message, 'danger');
+              }
+            })();
+            return true;
+          },
         },
       ],
     });
@@ -210,6 +243,7 @@ export default function EventoDetalhe() {
         { text: grupo.liderId ? 'Trocar líder' : 'Escalar líder', handler: () => setGrupoEscolhendo(grupo) },
         ...(grupo.liderId ? [{ text: 'Tirar líder', handler: () => tirarLider(grupo) }] : []),
         { text: 'Renomear', handler: () => renomear(grupo) },
+        { text: 'Apagar conversões do grupo', role: 'destructive', handler: () => apagarConversoes(grupo) },
         { text: 'Remover grupo', role: 'destructive', handler: () => remover(grupo) },
         { text: 'Cancelar', role: 'cancel' },
       ],
@@ -294,9 +328,14 @@ export default function EventoDetalhe() {
                 </IonSegmentButton>
               </IonSegment>
               {evento.appStatus && <p className="detalhe-dica">{DICA_STATUS[evento.appStatus]}</p>}
-              <IonButton expand="block" fill="outline" routerLink={`/placar/${id}`} className="detalhe-placar">
-                <IonIcon icon={podiumOutline} slot="start" /> Ver placar ao vivo
-              </IonButton>
+              <div className="detalhe-atalhos">
+                <IonButton expand="block" routerLink={`/admin/evento/${id}/conversoes`}>
+                  <IonIcon icon={listOutline} slot="start" /> Conversões e exportar
+                </IonButton>
+                <IonButton expand="block" fill="outline" routerLink={`/placar/${id}`}>
+                  <IonIcon icon={podiumOutline} slot="start" /> Placar
+                </IonButton>
+              </div>
             </div>
 
             <div className="detalhe-grupos-cab">

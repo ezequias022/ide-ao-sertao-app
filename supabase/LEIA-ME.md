@@ -25,10 +25,11 @@ supabase/
   migrations/
     20261102000100_app_conversoes.sql      tabelas, funções e regras de acesso
     20261102000200_app_realtime_placar.sql aviso em tempo real do placar
+    20261102000300_app_avisos_completos.sql aviso também ao corrigir e ao apagar
   desfazer/
     desfazer_app_conversoes.sql            remove tudo do app, se precisar voltar atrás
   tests/
-    rodar_testes.sh                        roda os 57 testes num PostgreSQL local
+    rodar_testes.sh                        roda os 68 testes num PostgreSQL local
 ```
 
 ## Como aplicar no Supabase
@@ -36,7 +37,7 @@ supabase/
 1. Abra o projeto da missão no Supabase → **SQL Editor** → **New query**.
 2. Cole o conteúdo de `20261102000100_app_conversoes.sql` e clique em **Run**.
    A migration roda numa transação: se der qualquer erro, nada é gravado.
-3. Faça o mesmo com `20261102000200_app_realtime_placar.sql`.
+3. Faça o mesmo com `20261102000200_app_realtime_placar.sql` e depois com `20261102000300_app_avisos_completos.sql`, nessa ordem.
 4. Cadastre os admins do app trocando os e-mails pelos das contas do site:
 
    ```sql
@@ -74,6 +75,7 @@ Rode `desfazer/desfazer_app_conversoes.sql` no SQL Editor. Ele apaga as tabelas 
 | Ver dados pessoais | Todos | Só os que registrou | Não | Não |
 | Ver placar | Sim | Dos seus eventos | Não | Não |
 | Exportar | Sim | Não | Não | Não |
+| Apagar conversão | Sim | Não | Não | Não |
 
 Detalhes que o banco garante sozinho, mesmo que alguém tente burlar o app:
 
@@ -90,4 +92,4 @@ Detalhes que o banco garante sozinho, mesmo que alguém tente burlar o app:
 
 ## Testes
 
-`supabase/tests/rodar_testes.sh` cria um banco local que imita o Supabase, aplica as migrations e roda 57 testes com cinco contas (admin, três líderes e uma sem função). Ele roda tudo duas vezes: com o `id` dos eventos do site como `uuid` e como número, para funcionar com qualquer um dos dois.
+`supabase/tests/rodar_testes.sh` cria um banco local que imita o Supabase, aplica as migrations e roda 68 testes com cinco contas (admin, três líderes e uma sem função). Ele roda tudo duas vezes: com o `id` dos eventos do site como `uuid` e como número, para funcionar com qualquer um dos dois.

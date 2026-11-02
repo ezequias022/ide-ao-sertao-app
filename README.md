@@ -2,8 +2,8 @@
 
 App interno da **Missão Ide ao Sertão** para os líderes de grupo registrarem as conversões durante os impactos evangelísticos, mesmo sem internet, e para a liderança acompanhar tudo em tempo real e repassar as listas aos pastores locais.
 
-> Status: **v0.2** — login, área do admin (impacto, grupos, escalação), registro de conversões offline com fila de envio, meus registros com correção e placar ao vivo.
-> Próximas etapas: painel ao vivo e exportação para o admin, APK Android e versão iPhone.
+> Status: **v0.3** — login, área do admin (impacto, grupos, escalação), registro de conversões offline com fila de envio, meus registros com correção, placar ao vivo, painel ao vivo do admin com exclusão e exportação (Excel, CSV e texto para WhatsApp).
+> Próxima etapa: APK Android e versão iPhone.
 
 ## Tecnologias
 
@@ -42,6 +42,7 @@ src/
   dados/        acesso a dados: interface única + Supabase + modo demonstração
   sessao/       login e papel do usuário (admin ou líder), funciona offline
   fila/         banco local (IndexedDB) e fila de envio das conversões
+  exportacao/   Excel, CSV e texto para o pastor local, e o compartilhar do celular
   telas/        telas do app (admin/ = área da liderança)
   componentes/  peças reutilizadas
   tema/         cores e tipografia da missão

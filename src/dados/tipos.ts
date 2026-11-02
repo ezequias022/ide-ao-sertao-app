@@ -100,3 +100,11 @@ export class ErroSemConexao extends ErroApp {
     this.name = 'ErroSemConexao';
   }
 }
+
+/** Conversão como o admin vê: com quem registrou e quando chegou ao servidor. */
+export interface ConversaoAdmin extends Conversao {
+  registradoPor: string;
+  recebidoEm: string;
+}
+
+export type FormatoExportacao = 'xlsx' | 'csv' | 'texto';

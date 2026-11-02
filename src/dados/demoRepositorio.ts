@@ -4,6 +4,8 @@ import {
   ErroRecusado,
   ErroSemConexao,
   type Conversao,
+  type ConversaoAdmin,
+  type FormatoExportacao,
   type EventoSite,
   type Grupo,
   type LinhaPlacar,
@@ -64,14 +66,14 @@ export class DemoRepositorio implements Repositorio {
   private readonly historico = new Set(['g1:u-lider', 'g2:p-joao', 'g4:u-lider']);
 
   // Algumas conversões já registradas pelos outros grupos, para o placar não começar vazio.
-  private conversoes: Array<Conversao & { registradoPor: string }> = [
+  private conversoes: ConversaoAdmin[] = [
     ...Array.from({ length: 4 }, (_, i) => this.exemplo('g2', 'p-joao', `Pessoa ${i + 1}`)),
     ...Array.from({ length: 2 }, (_, i) => this.exemplo('g3', 'u-admin', `Visitante ${i + 1}`)),
   ];
 
   private ouvintesPlacar = new Map<string, Set<() => void>>();
 
-  private exemplo(grupoId: string, autor: string, nome: string): Conversao & { registradoPor: string } {
+  private exemplo(grupoId: string, autor: string, nome: string): ConversaoAdmin {
     const agora = new Date().toISOString();
     return {
       id: novoId(),
@@ -88,6 +90,7 @@ export class DemoRepositorio implements Repositorio {
       registradoEm: agora,
       atualizadoEm: agora,
       registradoPor: autor,
+      recebidoEm: agora,
     };
   }
 
@@ -182,8 +185,8 @@ export class DemoRepositorio implements Repositorio {
         'O servidor recusou: o evento pode ter sido encerrado ou você não é mais líder deste grupo. Avise um admin.',
       );
     }
-    this.conversoes.push({ ...c, registradoPor: this.usuario!.id });
-    this.ouvintesPlacar.get(c.eventoId)?.forEach((f) => f());
+    this.conversoes.push({ ...c, registradoPor: this.usuario!.id, recebidoEm: new Date().toISOString() });
+    this.avisar(c.eventoId);
   }
 
   async atualizarConversao(c: Conversao): Promise<void> {
@@ -197,6 +200,7 @@ export class DemoRepositorio implements Repositorio {
     }
     if (c.atualizadoEm < atual.atualizadoEm) return; // correção mais antiga: ignora
     Object.assign(atual, { ...c, id: atual.id, registradoEm: atual.registradoEm, registradoPor: atual.registradoPor });
+    this.avisar(c.eventoId);
   }
 
   async buscarConversao(id: string): Promise<Conversao | null> {
@@ -204,7 +208,7 @@ export class DemoRepositorio implements Repositorio {
     await espera();
     const c = this.conversoes.find((x) => x.id === id && x.registradoPor === this.usuario?.id);
     if (!c) return null;
-    const { registradoPor: _autor, ...resto } = c;
+    const { registradoPor: _autor, recebidoEm: _recebido, ...resto } = c;
     return { ...resto };
   }
 
@@ -223,11 +227,57 @@ export class DemoRepositorio implements Repositorio {
       .sort((a, b) => b.total - a.total || a.grupoNome.localeCompare(b.grupoNome, 'pt-BR', { numeric: true }));
   }
 
+  private avisar(eventoId: string) {
+    this.ouvintesPlacar.get(eventoId)?.forEach((f) => f());
+  }
+
   ouvirPlacar(eventoId: string, aoMudar: () => void): () => void {
     const lista = this.ouvintesPlacar.get(eventoId) ?? new Set();
     lista.add(aoMudar);
     this.ouvintesPlacar.set(eventoId, lista);
     return () => lista.delete(aoMudar);
+  }
+
+  // ---------------- Admin: conversões ----------------
+
+  async conversoesDoEvento(eventoId: string): Promise<ConversaoAdmin[]> {
+    exigirConexao();
+    await espera();
+    this.exigirAdmin();
+    return this.conversoes
+      .filter((c) => c.eventoId === eventoId)
+      .sort((a, b) => b.registradoEm.localeCompare(a.registradoEm))
+      .map((c) => ({ ...c }));
+  }
+
+  async apagarConversao(id: string): Promise<void> {
+    exigirConexao();
+    await espera();
+    this.exigirAdmin();
+    const c = this.conversoes.find((x) => x.id === id);
+    this.conversoes = this.conversoes.filter((x) => x.id !== id);
+    if (c) this.avisar(c.eventoId);
+  }
+
+  async apagarConversoesDoGrupo(grupoId: string): Promise<number> {
+    exigirConexao();
+    await espera();
+    this.exigirAdmin();
+    const antes = this.conversoes.length;
+    const eventoId = this.gruposDemo.find((g) => g.id === grupoId)?.eventoId;
+    this.conversoes = this.conversoes.filter((x) => x.grupoId !== grupoId);
+    if (eventoId) this.avisar(eventoId);
+    return antes - this.conversoes.length;
+  }
+
+  async registrarExportacao(
+    _eventoId: string,
+    _formato: FormatoExportacao,
+    _quantidade: number,
+    _filtro: object | null,
+  ): Promise<void> {
+    exigirConexao();
+    this.exigirAdmin();
   }
 
   // ---------------- Admin: eventos ----------------
@@ -311,6 +361,9 @@ export class DemoRepositorio implements Repositorio {
   async removerGrupo(grupoId: string): Promise<void> {
     await espera();
     this.exigirAdmin();
+    if (this.conversoes.some((c) => c.grupoId === grupoId)) {
+      throw new ErroApp('Este grupo tem conversões. Para remover, use antes a opção "Apagar conversões do grupo".');
+    }
     this.gruposDemo = this.gruposDemo.filter((g) => g.id !== grupoId);
   }
 

@@ -1,0 +1,83 @@
+.conv-resumo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 16px 6px;
+  color: var(--ias-texto-suave);
+  font-size: 0.92rem;
+}
+.conv-resumo strong {
+  font-size: 1.3rem;
+  color: var(--ias-terracota-escuro);
+}
+.conv-ao-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #e6f4ea;
+  color: var(--ion-color-success);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.conv-filtros {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 2px 12px 6px;
+  scrollbar-width: none;
+}
+.conv-filtros ion-chip {
+  flex: none;
+  font-weight: 600;
+}
+.conv-apelido {
+  font-weight: 400;
+  color: var(--ias-texto-suave);
+}
+.conv-menor {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ias-amarelo-escuro);
+  background: var(--ias-amarelo-suave);
+  padding: 3px 7px;
+  border-radius: 6px;
+}
+
+.conv-detalhe {
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --padding-top: 24px;
+}
+.conv-detalhe h2 {
+  font-size: 1.7rem;
+  margin: 0;
+  color: var(--ias-marrom);
+}
+.conv-detalhe-apelido {
+  margin: 4px 0 0;
+  color: var(--ias-texto-suave);
+}
+.conv-detalhe dl {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 10px 12px;
+  margin: 20px 0 22px;
+  font-size: 0.98rem;
+}
+.conv-detalhe dt {
+  color: var(--ias-texto-suave);
+  font-weight: 600;
+}
+.conv-detalhe dd {
+  margin: 0;
+  white-space: pre-line;
+}
+.conv-detalhe ion-button {
+  margin-top: 10px;
+}

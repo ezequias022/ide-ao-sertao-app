@@ -85,6 +85,12 @@
   font-weight: 500;
 }
 
-.detalhe-placar {
+.detalhe-atalhos {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 8px;
   margin-top: 14px;
+}
+.detalhe-atalhos ion-button {
+  margin: 0;
 }

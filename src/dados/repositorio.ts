@@ -1,5 +1,7 @@
 import type {
   Conversao,
+  ConversaoAdmin,
+  FormatoExportacao,
   EventoSite,
   Grupo,
   LinhaPlacar,
@@ -38,8 +40,15 @@ export interface Repositorio {
 
   // Placar
   placar(eventoId: string): Promise<LinhaPlacar[]>;
-  /** Avisa quando chega conversão nova no evento. Devolve a função para parar de ouvir. */
+  /** Avisa quando uma conversão do evento entra, é corrigida ou apagada. Devolve a função para parar de ouvir. */
   ouvirPlacar(eventoId: string, aoMudar: () => void): () => void;
+
+  // Admin: conversões
+  conversoesDoEvento(eventoId: string): Promise<ConversaoAdmin[]>;
+  apagarConversao(id: string): Promise<void>;
+  /** Apaga todas as conversões de um grupo. Devolve quantas foram apagadas. */
+  apagarConversoesDoGrupo(grupoId: string): Promise<number>;
+  registrarExportacao(eventoId: string, formato: FormatoExportacao, quantidade: number, filtro: object | null): Promise<void>;
 
   // Admin: eventos
   eventosSite(): Promise<EventoSite[]>;

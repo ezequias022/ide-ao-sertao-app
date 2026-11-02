@@ -6,6 +6,8 @@ import {
   ErroRecusado,
   ErroSemConexao,
   type Conversao,
+  type ConversaoAdmin,
+  type FormatoExportacao,
   type EventoSite,
   type Grupo,
   type LinhaPlacar,
@@ -231,6 +233,8 @@ export class SupabaseRepositorio implements Repositorio {
       canal = this.db
         .channel(`placar:${eventoId}`, { config: { private: true } })
         .on('broadcast', { event: 'nova_conversao' }, () => aoMudar())
+        .on('broadcast', { event: 'conversao_atualizada' }, () => aoMudar())
+        .on('broadcast', { event: 'conversao_apagada' }, () => aoMudar())
         .subscribe((estado) => {
           // Ao reconectar, pode ter chegado coisa enquanto estava fora.
           if (estado === 'SUBSCRIBED') aoMudar();
@@ -241,6 +245,48 @@ export class SupabaseRepositorio implements Repositorio {
       parado = true;
       if (canal) void this.db.removeChannel(canal);
     };
+  }
+
+  // ---------------- Admin: conversões ----------------
+
+  async conversoesDoEvento(eventoId: string): Promise<ConversaoAdmin[]> {
+    const data = conferir(
+      await this.db
+        .from('app_conversoes')
+        .select(`${COLUNAS_CONVERSAO}, registrado_por, recebido_em`)
+        .eq('evento_id', eventoId)
+        .order('registrado_em', { ascending: false }),
+      'carregar as conversões',
+    ) as Array<LinhaConversao & { registrado_por: string; recebido_em: string }>;
+    return data.map((l) => ({ ...paraConversao(l), registradoPor: l.registrado_por, recebidoEm: l.recebido_em }));
+  }
+
+  async apagarConversao(id: string): Promise<void> {
+    const data = conferir(
+      await this.db.from('app_conversoes').delete().eq('id', id).select('id'),
+      'apagar a conversão',
+    ) as Array<{ id: string }>;
+    if (data.length === 0) throw new ErroApp('Não foi possível apagar: você precisa ser admin.');
+  }
+
+  async apagarConversoesDoGrupo(grupoId: string): Promise<number> {
+    const data = conferir(
+      await this.db.from('app_conversoes').delete().eq('grupo_id', grupoId).select('id'),
+      'apagar as conversões do grupo',
+    ) as Array<{ id: string }>;
+    return data.length;
+  }
+
+  async registrarExportacao(
+    eventoId: string,
+    formato: FormatoExportacao,
+    quantidade: number,
+    filtro: object | null,
+  ): Promise<void> {
+    conferir(
+      await this.db.from('app_exportacoes').insert({ evento_id: eventoId, formato, quantidade, filtro }),
+      'registrar a exportação',
+    );
   }
 
   // ---------------- Admin: eventos ----------------

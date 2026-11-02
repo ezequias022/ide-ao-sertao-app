@@ -25,6 +25,7 @@ import EditarRegistro from './telas/EditarRegistro';
 import Placar from './telas/Placar';
 import AdminEventos from './telas/admin/AdminEventos';
 import EventoDetalhe from './telas/admin/EventoDetalhe';
+import Conversoes from './telas/admin/Conversoes';
 
 setupIonicReact({
   mode: 'md', // mesmo visual no Android e no iPhone
@@ -63,6 +64,11 @@ function Rotas() {
             exact
             path="/admin/evento/:id"
             render={() => (admin ? <EventoDetalhe /> : <Redirect to="/inicio" />)}
+          />
+          <Route
+            exact
+            path="/admin/evento/:id/conversoes"
+            render={() => (admin ? <Conversoes /> : <Redirect to="/inicio" />)}
           />
           <Route exact path="/">
             <Redirect to="/inicio" />

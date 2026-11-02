@@ -28,7 +28,7 @@ rodar() {
     $PSQL -q -v ON_ERROR_STOP=1 -d "$DB" -f "$f"
   done
 
-  for f in "$DIR"/1*.sql "$DIR"/2*.sql; do
+  for f in "$DIR"/[0-9][0-9]_testes_*.sql; do
     echo "-> $(basename "$f")"
     sed -e "s/__ID1__/$id1/g" -e "s/__ID2__/$id2/g" -e "s/__ID3__/$id3/g" "$f" \
       | $PSQL -v ON_ERROR_STOP=1 -d "$DB" 2>&1 | grep -E "PASS|FAIL|ERRO|ERROR|passaram" | sed 's/^.*NOTICE: *//'

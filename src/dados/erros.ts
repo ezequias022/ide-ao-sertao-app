@@ -13,6 +13,7 @@ const POR_RESTRICAO: Record<string, string> = {
   app_grupos_evento_id_nome_key: 'Já existe um grupo com esse nome neste evento.',
   app_eventos_evento_site_id_key: 'Este evento do site já foi criado no app.',
   app_grupos_nome_check: 'O nome do grupo precisa ter de 1 a 60 caracteres.',
+  app_conversoes_grupo_id_fkey: 'Este grupo tem conversões. Para remover, use antes a opção "Apagar conversões do grupo".',
 };
 
 const POR_TEXTO: Array<[RegExp, string]> = [

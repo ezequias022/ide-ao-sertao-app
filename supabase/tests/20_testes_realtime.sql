@@ -12,7 +12,7 @@
 select ev from tests.ids \gset
 
 select tests.ok(
-  (select count(*) from realtime.messages where topic = 'placar:' || :'ev') = 7,
+  (select count(*) from realtime.messages where topic = 'placar:' || :'ev' and event = 'nova_conversao') = 7,
   'cada conversão gerou um aviso no canal do placar');
 
 select tests.ok(
@@ -23,10 +23,11 @@ select tests.ok(
   'os avisos não carregam dados pessoais');
 
 select set_config('realtime.topic', 'placar:' || :'ev', false);
+select count(*) as total_avisos from realtime.messages where topic = 'placar:' || :'ev' \gset
 
 select tests.como(:lider2);
 set role authenticated;
-select tests.ok((select count(*) from realtime.messages) = 7, 'líder do evento ouve o canal do placar');
+select tests.ok((select count(*) from realtime.messages) = :total_avisos, 'líder do evento ouve o canal do placar');
 reset role;
 
 select tests.como(:semfunc);
@@ -36,7 +37,7 @@ reset role;
 
 select tests.como(:admin);
 set role authenticated;
-select tests.ok((select count(*) from realtime.messages) = 7, 'admin ouve o canal');
+select tests.ok((select count(*) from realtime.messages) = :total_avisos, 'admin ouve o canal');
 reset role;
 
 \echo ''
