@@ -1,0 +1,81 @@
+# Gera o APK assinado do Android e publica no GitHub Releases.
+# Como usar: Actions > "APK Android" > Run workflow. A versão vem do package.json.
+name: APK Android
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir segredos da assinatura
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          SENHA: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ] || [ -z "$SENHA" ]; then
+            echo "::error::Faltam os segredos ANDROID_KEYSTORE_BASE64 e/ou ANDROID_KEYSTORE_PASSWORD."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+
+      - name: Versão
+        id: versao
+        run: echo "versao=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Impedir versão repetida
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.versao.outputs.versao }}" > /dev/null 2>&1; then
+            echo "::error::A versão v${{ steps.versao.outputs.versao }} já foi publicada. Aumente a versão no package.json."
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx cap sync android
+
+      - name: Gerar APK assinado
+        env:
+          ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/chave.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ide-ao-sertao
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$ANDROID_KEYSTORE_FILE"
+          cd android
+          ./gradlew assembleRelease --no-daemon
+          rm -f "$ANDROID_KEYSTORE_FILE"
+
+      - name: Renomear APK
+        run: |
+          mkdir -p saida
+          cp android/app/build/outputs/apk/release/app-release.apk "saida/ide-ao-sertao-v${{ steps.versao.outputs.versao }}.apk"
+          ls -lh saida
+
+      - name: Publicar no Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.versao.outputs.versao }}" saida/*.apk \
+            --title "Ide ao Sertão v${{ steps.versao.outputs.versao }}" \
+            --notes "APK para Android. Instale por cima da versão anterior: os registros guardados no celular continuam."

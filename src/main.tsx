@@ -19,7 +19,15 @@ import '@fontsource/eb-garamond/500.css';
 import '@fontsource/eb-garamond/600.css';
 
 import './tema/tema.css';
+import { Capacitor } from '@capacitor/core';
+import { registerSW } from 'virtual:pwa-register';
 import App from './App';
+
+// Versão iPhone/navegador: guarda o app no aparelho para abrir sem internet
+// e atualiza sozinho quando sair versão nova. No APK isso não é necessário.
+if (!Capacitor.isNativePlatform() && import.meta.env.PROD) {
+  registerSW({ immediate: true });
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

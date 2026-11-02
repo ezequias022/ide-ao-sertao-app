@@ -2,8 +2,12 @@
 
 App interno da **Missão Ide ao Sertão** para os líderes de grupo registrarem as conversões durante os impactos evangelísticos, mesmo sem internet, e para a liderança acompanhar tudo em tempo real e repassar as listas aos pastores locais.
 
-> Status: **v0.3** — login, área do admin (impacto, grupos, escalação), registro de conversões offline com fila de envio, meus registros com correção, placar ao vivo, painel ao vivo do admin com exclusão e exportação (Excel, CSV e texto para WhatsApp).
-> Próxima etapa: APK Android e versão iPhone.
+> Status: **v0.4** — login, área do admin (impacto, grupos, escalação), registro de conversões offline com fila de envio, meus registros com correção, placar ao vivo, painel ao vivo do admin com exclusão e exportação (Excel, CSV e texto para WhatsApp), APK Android e versão web instalável para iPhone.
+
+## Instalar
+
+- **Android:** baixe o APK mais recente em [Releases](../../releases/latest) e instale (permita "instalar apps desconhecidos" uma vez). Versões novas são avisadas dentro do app.
+- **iPhone:** abra o link da versão web no **Safari** → Compartilhar → **Adicionar à Tela de Início**. Ela abre sem internet e se atualiza sozinha.
 
 ## Tecnologias
 
@@ -34,6 +38,17 @@ No modo demonstração, entre com `admin@demo` ou `lider@demo` e a senha `demo`.
 | `npm run build` | Checa os tipos e gera o app em `dist/` |
 | `npm test` | Testes do app |
 | `npm run test:banco` | Testes das regras de acesso do banco (precisa de PostgreSQL local) |
+
+## Automação (GitHub Actions)
+
+| Workflow | Quando | O que faz |
+| --- | --- | --- |
+| CI | a cada push | tipos, testes do app, build e testes das regras do banco num PostgreSQL |
+| Publicar versão web | push na `main` | publica a versão web (iPhone) no GitHub Pages |
+| APK Android | manual | gera o APK assinado com a versão do `package.json` e publica no Releases |
+
+Para lançar uma versão Android: aumente `version` no `package.json`, faça o push e rode o workflow **APK Android**.
+A chave de assinatura fica só nos segredos do repositório (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`) e numa cópia de segurança com a liderança.
 
 ## Organização
 

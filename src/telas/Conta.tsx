@@ -17,7 +17,7 @@ import { useSessao } from '../sessao/SessaoContext';
 import { modoDemo } from '../dados';
 import { useFila } from '../fila/FilaContext';
 
-const VERSAO = import.meta.env.PACKAGE_VERSION ?? '0.1.0';
+import { VERSAO_APP as VERSAO } from '../util/atualizacao';
 
 export default function Conta() {
   const { usuario, admin, sair } = useSessao();

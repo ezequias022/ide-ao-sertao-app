@@ -19,6 +19,7 @@ import { Carregando, ErroCarregar, Vazio } from '../componentes/Estado';
 import { StatusBadge } from '../componentes/StatusBadge';
 import { useSessao } from '../sessao/SessaoContext';
 import { BarraSync } from '../componentes/BarraSync';
+import { AvisoAtualizacao } from '../componentes/AvisoAtualizacao';
 import { dataHora } from '../util/formatar';
 import { gravarCache } from '../util/cacheLocal';
 import { useEffect } from 'react';
@@ -107,6 +108,7 @@ export default function Inicio() {
           <IonRefresherContent />
         </IonRefresher>
 
+        <AvisoAtualizacao />
         {carregando && !dados && <Carregando texto="Carregando seus eventos…" />}
         {doCacheDe && (
           <p className="inicio-cache">Mostrando os eventos salvos no celular em {dataHora(doCacheDe.toISOString())}.</p>

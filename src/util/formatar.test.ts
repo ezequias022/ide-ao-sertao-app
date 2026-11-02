@@ -53,3 +53,14 @@ describe('telefone', () => {
     expect(telefoneValido('07999998888')).toBe(false);
   });
 });
+
+import { ehMaisNova } from './atualizacao';
+
+describe('versão', () => {
+  it('compara versões numericamente', () => {
+    expect(ehMaisNova('v0.10.0', '0.9.9')).toBe(true);
+    expect(ehMaisNova('0.4.0', '0.4.0')).toBe(false);
+    expect(ehMaisNova('0.4.1', '0.4.0')).toBe(true);
+    expect(ehMaisNova('0.3.9', '0.4.0')).toBe(false);
+  });
+});
