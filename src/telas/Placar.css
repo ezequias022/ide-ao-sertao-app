@@ -1,0 +1,112 @@
+.placar-total {
+  text-align: center;
+  margin: 16px;
+  padding: 22px 16px 16px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--ias-terracota) 0%, var(--ias-terracota-escuro) 100%);
+  color: #fff;
+}
+.placar-evento {
+  margin: 0 0 6px;
+  font-family: var(--ias-fonte-titulo);
+  font-size: 1.15rem;
+  font-weight: 600;
+  opacity: 0.95;
+}
+.placar-total strong {
+  display: block;
+  font-size: 4rem;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.placar-total > span {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+.placar-ao-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.8rem;
+}
+.placar-ao-vivo ion-icon {
+  color: var(--ias-amarelo);
+}
+.placar-ao-vivo.off ion-icon {
+  color: #fff;
+}
+
+.placar-lista {
+  list-style: none;
+  margin: 0 16px 24px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--ias-borda);
+  border-radius: 14px;
+}
+.placar-lista li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-bottom: 1px solid var(--ias-borda);
+}
+.placar-lista li:last-child {
+  border-bottom: 0;
+}
+.placar-pos {
+  width: 30px;
+  font-weight: 700;
+  color: var(--ias-texto-suave);
+  padding-top: 1px;
+}
+.placar-lista li.primeiro .placar-pos {
+  color: var(--ias-amarelo-escuro);
+}
+.placar-grupo {
+  flex: 1;
+  min-width: 0;
+}
+.placar-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.placar-nome {
+  font-weight: 600;
+  font-size: 1.02rem;
+}
+.placar-num {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ias-terracota-escuro);
+  font-variant-numeric: tabular-nums;
+}
+.placar-barra {
+  display: flex;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--ias-osso-escuro);
+  overflow: hidden;
+}
+.placar-barra span {
+  display: block;
+  background: var(--ias-terracota);
+  transition: width 0.4s ease;
+}
+.placar-barra span.pendente {
+  background: repeating-linear-gradient(45deg, var(--ias-amarelo-escuro) 0 4px, var(--ias-amarelo) 4px 8px);
+}
+.placar-pendente {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: var(--ias-texto-suave);
+}

@@ -28,6 +28,7 @@ import {
   ellipsisVertical,
   locationOutline,
   peopleOutline,
+  podiumOutline,
 } from 'ionicons/icons';
 import { repositorio, type Grupo, type Pessoa, type StatusEvento } from '../../dados';
 import { traduzirErro } from '../../dados/erros';
@@ -293,6 +294,9 @@ export default function EventoDetalhe() {
                 </IonSegmentButton>
               </IonSegment>
               {evento.appStatus && <p className="detalhe-dica">{DICA_STATUS[evento.appStatus]}</p>}
+              <IonButton expand="block" fill="outline" routerLink={`/placar/${id}`} className="detalhe-placar">
+                <IonIcon icon={podiumOutline} slot="start" /> Ver placar ao vivo
+              </IonButton>
             </div>
 
             <div className="detalhe-grupos-cab">

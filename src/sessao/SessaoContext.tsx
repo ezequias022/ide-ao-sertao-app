@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { repositorio, type Usuario } from '../dados';
+import { apagarCachesDoUsuario, gravarCache, lerCache } from '../util/cacheLocal';
 
 interface EstadoSessao {
   carregando: boolean;
@@ -20,6 +21,10 @@ const lerAdminGuardado = (id: string) => {
     return false;
   }
 };
+// Conta guardada para abrir o app sem internet (a sessão do Supabase pode ter
+// vencido enquanto o líder está no campo; ela renova sozinha quando volta o sinal).
+const CHAVE_CONTA = 'conta';
+
 const guardarAdmin = (id: string, admin: boolean) => {
   try {
     localStorage.setItem(chaveAdmin(id), admin ? '1' : '0');
@@ -52,15 +57,20 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
     let ativo = true;
     repositorio
       .usuarioAtual()
+      .catch(() => null)
       .then(async (u) => {
         if (!ativo) return;
-        setUsuario(u);
-        await atualizarPapel(u);
+        // Sem internet e sem sessão válida: usa a conta guardada no aparelho.
+        const conta = u ?? (navigator.onLine ? null : (lerCache<Usuario>(CHAVE_CONTA)?.valor ?? null));
+        setUsuario(conta);
+        await atualizarPapel(conta);
       })
       .finally(() => ativo && setCarregando(false));
 
     const cancelar = repositorio.aoMudarSessao((u) => {
       setUsuario((anterior) => {
+        // Sem internet a renovação da sessão falha; isso não é "sair".
+        if (!u && anterior && !navigator.onLine) return anterior;
         if (anterior?.id !== u?.id) void atualizarPapel(u);
         return u;
       });
@@ -74,6 +84,7 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
   const entrar = useCallback(
     async (email: string, senha: string) => {
       const u = await repositorio.entrar(email, senha);
+      gravarCache(CHAVE_CONTA, u);
       setUsuario(u);
       await atualizarPapel(u);
     },
@@ -81,7 +92,14 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
   );
 
   const sair = useCallback(async () => {
+    const id = (await repositorio.usuarioAtual().catch(() => null))?.id ?? lerCache<Usuario>(CHAVE_CONTA)?.valor.id;
     await repositorio.sair();
+    if (id) apagarCachesDoUsuario(id);
+    try {
+      localStorage.removeItem('ias.cache.' + CHAVE_CONTA);
+    } catch {
+      /* ignora */
+    }
     // Recarrega o app do zero: limpa da memória tudo o que era da conta
     // anterior e o próximo login começa pela tela inicial.
     window.location.hash = '#/inicio';

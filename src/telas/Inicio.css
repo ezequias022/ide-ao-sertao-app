@@ -50,3 +50,15 @@
   gap: 8px;
   align-items: center;
 }
+
+.evento-registrar {
+  margin-top: 16px;
+}
+.evento-cartao ion-button[fill='outline'] {
+  margin-top: 10px;
+}
+.inicio-cache {
+  margin: 12px 16px 0;
+  font-size: 0.84rem;
+  color: var(--ias-texto-suave);
+}

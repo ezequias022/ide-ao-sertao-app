@@ -1,6 +1,7 @@
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
+  IonBadge,
   IonIcon,
   IonLabel,
   IonRouterOutlet,
@@ -11,12 +12,17 @@ import {
   setupIonicReact,
 } from '@ionic/react';
 import { IonReactHashRouter } from '@ionic/react-router';
-import { calendarOutline, personCircleOutline, settingsOutline } from 'ionicons/icons';
+import { calendarOutline, documentTextOutline, personCircleOutline, settingsOutline } from 'ionicons/icons';
 
 import { SessaoProvider, useSessao } from './sessao/SessaoContext';
+import { FilaProvider, useFila } from './fila/FilaContext';
 import Login from './telas/Login';
 import Inicio from './telas/Inicio';
 import Conta from './telas/Conta';
+import Registrar from './telas/Registrar';
+import MeusRegistros from './telas/MeusRegistros';
+import EditarRegistro from './telas/EditarRegistro';
+import Placar from './telas/Placar';
 import AdminEventos from './telas/admin/AdminEventos';
 import EventoDetalhe from './telas/admin/EventoDetalhe';
 
@@ -27,6 +33,7 @@ setupIonicReact({
 
 function Rotas() {
   const { carregando, usuario, admin } = useSessao();
+  const { pendentes, comErro } = useFila();
 
   if (carregando) {
     return (
@@ -45,6 +52,10 @@ function Rotas() {
         <IonRouterOutlet>
           <Route exact path="/inicio" component={Inicio} />
           <Route exact path="/conta" component={Conta} />
+          <Route exact path="/registros" component={MeusRegistros} />
+          <Route exact path="/registros/:id" component={EditarRegistro} />
+          <Route exact path="/registrar/:eventoId/:grupoId" component={Registrar} />
+          <Route exact path="/placar/:eventoId" component={Placar} />
           {/* Rotas sempre declaradas (o Ionic não lida bem com rotas que aparecem e somem);
               quem não é admin é mandado para o início. */}
           <Route exact path="/admin" render={() => (admin ? <AdminEventos /> : <Redirect to="/inicio" />)} />
@@ -66,6 +77,13 @@ function Rotas() {
             <IonIcon icon={calendarOutline} />
             <IonLabel>Eventos</IonLabel>
           </IonTabButton>
+          <IonTabButton tab="registros" href="/registros">
+            <IonIcon icon={documentTextOutline} />
+            <IonLabel>Registros</IonLabel>
+            {(pendentes > 0 || comErro > 0) && (
+              <IonBadge color={comErro > 0 ? 'danger' : 'secondary'}>{comErro > 0 ? comErro : pendentes}</IonBadge>
+            )}
+          </IonTabButton>
           {admin && (
             <IonTabButton tab="admin" href="/admin">
               <IonIcon icon={settingsOutline} />
@@ -86,7 +104,9 @@ export default function App() {
   return (
     <IonApp>
       <SessaoProvider>
-        <Rotas />
+        <FilaProvider>
+          <Rotas />
+        </FilaProvider>
       </SessaoProvider>
     </IonApp>
   );

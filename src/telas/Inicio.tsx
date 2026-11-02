@@ -1,4 +1,5 @@
 import {
+  IonButton,
   IonCard,
   IonCardContent,
   IonContent,
@@ -10,13 +11,17 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { calendarOutline, locationOutline, peopleOutline, timeOutline } from 'ionicons/icons';
+import { calendarOutline, locationOutline, peopleOutline, personAddOutline, podiumOutline, timeOutline } from 'ionicons/icons';
 import { repositorio, type MeuEvento } from '../dados';
 import { useCarregar } from '../util/useCarregar';
 import { periodo } from '../util/formatar';
 import { Carregando, ErroCarregar, Vazio } from '../componentes/Estado';
 import { StatusBadge } from '../componentes/StatusBadge';
 import { useSessao } from '../sessao/SessaoContext';
+import { BarraSync } from '../componentes/BarraSync';
+import { dataHora } from '../util/formatar';
+import { gravarCache } from '../util/cacheLocal';
+import { useEffect } from 'react';
 import './Inicio.css';
 
 function CartaoEvento({ ev, destaque }: { ev: MeuEvento; destaque?: boolean }) {
@@ -43,10 +48,25 @@ function CartaoEvento({ ev, destaque }: { ev: MeuEvento; destaque?: boolean }) {
             <IonIcon icon={peopleOutline} /> Seu grupo: <strong>{ev.grupoNome}</strong>
           </span>
         </div>
-        {destaque && (
+        {ev.status === 'ativo' && ev.liderAtual && (
+          <IonButton
+            expand="block"
+            size="large"
+            routerLink={`/registrar/${ev.eventoId}/${ev.grupoId}`}
+            className="evento-registrar"
+          >
+            <IonIcon icon={personAddOutline} slot="start" /> Registrar conversão
+          </IonButton>
+        )}
+        {ev.status === 'planejado' && (
           <p className="evento-proximo">
-            <IonIcon icon={timeOutline} /> O registro de conversões chega na próxima etapa do app.
+            <IonIcon icon={timeOutline} /> O registro abre quando a liderança ativar o evento.
           </p>
+        )}
+        {ev.status !== 'planejado' && (
+          <IonButton expand="block" fill="outline" routerLink={`/placar/${ev.eventoId}`}>
+            <IonIcon icon={podiumOutline} slot="start" /> Ver placar
+          </IonButton>
         )}
       </IonCardContent>
     </IonCard>
@@ -54,8 +74,21 @@ function CartaoEvento({ ev, destaque }: { ev: MeuEvento; destaque?: boolean }) {
 }
 
 export default function Inicio() {
-  const { admin } = useSessao();
-  const { dados, carregando, erro, recarregar } = useCarregar(() => repositorio.meusEventos(), []);
+  const { admin, usuario } = useSessao();
+  const { dados, carregando, erro, doCacheDe, recarregar } = useCarregar(() => repositorio.meusEventos(), [], {
+    cache: usuario ? `meusEventos.${usuario.id}` : null,
+  });
+
+  // Com internet, já guarda o placar dos eventos ativos para ele abrir mesmo sem sinal depois.
+  useEffect(() => {
+    if (!dados || doCacheDe) return;
+    for (const ev of dados.filter((e) => e.status === 'ativo')) {
+      repositorio
+        .placar(ev.eventoId)
+        .then((p) => gravarCache(`placar.${ev.eventoId}`, p))
+        .catch(() => undefined);
+    }
+  }, [dados, doCacheDe]);
 
   const ativos = dados?.filter((e) => e.status === 'ativo') ?? [];
   const proximos = dados?.filter((e) => e.status === 'planejado') ?? [];
@@ -67,6 +100,7 @@ export default function Inicio() {
         <IonToolbar>
           <IonTitle>Meus eventos</IonTitle>
         </IonToolbar>
+        <BarraSync />
       </IonHeader>
       <IonContent>
         <IonRefresher slot="fixed" onIonRefresh={(e) => void recarregar().finally(() => e.detail.complete())}>
@@ -74,6 +108,9 @@ export default function Inicio() {
         </IonRefresher>
 
         {carregando && !dados && <Carregando texto="Carregando seus eventos…" />}
+        {doCacheDe && (
+          <p className="inicio-cache">Mostrando os eventos salvos no celular em {dataHora(doCacheDe.toISOString())}.</p>
+        )}
         {erro && !dados && <ErroCarregar mensagem={erro} tentar={() => void recarregar()} />}
 
         {dados && dados.length === 0 && (

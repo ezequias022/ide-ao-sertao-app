@@ -24,6 +24,7 @@ import { useCarregar } from '../../util/useCarregar';
 import { periodo } from '../../util/formatar';
 import { Carregando, ErroCarregar, Vazio } from '../../componentes/Estado';
 import { StatusBadge } from '../../componentes/StatusBadge';
+import { useSessao } from '../../sessao/SessaoContext';
 import './Admin.css';
 
 export default function AdminEventos() {
@@ -31,7 +32,10 @@ export default function AdminEventos() {
   const [alerta] = useIonAlert();
   const [toast] = useIonToast();
   const [criando, setCriando] = useState<string | null>(null);
-  const { dados, carregando, erro, recarregar } = useCarregar(() => repositorio.eventosSite(), []);
+  const { usuario } = useSessao();
+  const { dados, carregando, erro, recarregar } = useCarregar(() => repositorio.eventosSite(), [], {
+    cache: usuario ? `eventosSite.${usuario.id}` : null,
+  });
 
   const noApp = dados?.filter((e) => e.appEventoId) ?? [];
   const foraDoApp = dados?.filter((e) => !e.appEventoId) ?? [];

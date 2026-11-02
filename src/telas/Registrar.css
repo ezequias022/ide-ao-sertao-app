@@ -1,0 +1,41 @@
+.registrar-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 16px 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid var(--ias-borda);
+}
+.registrar-evento {
+  margin: 0;
+  font-family: var(--ias-fonte-titulo);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--ias-marrom);
+  line-height: 1.2;
+}
+.registrar-grupo {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: var(--ias-texto-suave);
+}
+.registrar-contador {
+  text-align: center;
+  min-width: 72px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--ias-amarelo-suave);
+}
+.registrar-contador strong {
+  display: block;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ias-terracota-escuro);
+}
+.registrar-contador span {
+  font-size: 0.72rem;
+  color: var(--ias-texto-suave);
+}

@@ -84,3 +84,7 @@
   color: var(--ion-color-danger) !important;
   font-weight: 500;
 }
+
+.detalhe-placar {
+  margin-top: 14px;
+}

@@ -1,0 +1,43 @@
+.barra-sync {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-align: left;
+  border: 0;
+  text-decoration: none;
+}
+.barra-sync ion-icon {
+  font-size: 20px;
+  flex: none;
+}
+.barra-sync ion-spinner {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.barra-sync.offline {
+  background: var(--ias-marrom);
+  color: #fff;
+}
+.barra-sync.offline ion-icon {
+  color: var(--ias-amarelo);
+}
+.barra-sync.pendente {
+  background: var(--ias-amarelo-suave);
+  color: var(--ias-marrom);
+  border-bottom: 1px solid #f0dc8a;
+}
+.barra-sync.pendente ion-icon,
+.barra-sync.pendente ion-spinner {
+  color: var(--ias-amarelo-escuro);
+}
+.barra-sync.erro {
+  background: var(--ion-color-danger);
+  color: #fff;
+  font-weight: 500;
+}

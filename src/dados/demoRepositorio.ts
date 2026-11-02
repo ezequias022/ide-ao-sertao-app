@@ -1,8 +1,12 @@
 import type { Repositorio } from './repositorio';
 import {
   ErroApp,
+  ErroRecusado,
+  ErroSemConexao,
+  type Conversao,
   type EventoSite,
   type Grupo,
+  type LinhaPlacar,
   type MeuEvento,
   type Pessoa,
   type StatusEvento,
@@ -23,6 +27,11 @@ interface EventoAppDemo {
 }
 
 const espera = (ms = 250) => new Promise((r) => setTimeout(r, ms));
+
+/** No modo demonstração, "sem internet" é o próprio navegador offline. */
+function exigirConexao() {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new ErroSemConexao();
+}
 const novoId = () => crypto.randomUUID();
 
 export class DemoRepositorio implements Repositorio {
@@ -53,6 +62,34 @@ export class DemoRepositorio implements Repositorio {
   ];
 
   private readonly historico = new Set(['g1:u-lider', 'g2:p-joao', 'g4:u-lider']);
+
+  // Algumas conversões já registradas pelos outros grupos, para o placar não começar vazio.
+  private conversoes: Array<Conversao & { registradoPor: string }> = [
+    ...Array.from({ length: 4 }, (_, i) => this.exemplo('g2', 'p-joao', `Pessoa ${i + 1}`)),
+    ...Array.from({ length: 2 }, (_, i) => this.exemplo('g3', 'u-admin', `Visitante ${i + 1}`)),
+  ];
+
+  private ouvintesPlacar = new Map<string, Set<() => void>>();
+
+  private exemplo(grupoId: string, autor: string, nome: string): Conversao & { registradoPor: string } {
+    const agora = new Date().toISOString();
+    return {
+      id: novoId(),
+      eventoId: 'e1',
+      grupoId,
+      nome,
+      apelido: null,
+      idade: null,
+      whatsapp: null,
+      endereco: 'Endereço de exemplo',
+      responsavelNome: null,
+      responsavelTelefone: null,
+      consentimento: true,
+      registradoEm: agora,
+      atualizadoEm: agora,
+      registradoPor: autor,
+    };
+  }
 
   private readonly pessoasDemo: Pessoa[] = [
     { id: 'u-admin', nome: 'Admin Demonstração', email: 'admin@demo', telefone: null, cidade: 'Petrolina', adminApp: true },
@@ -122,6 +159,75 @@ export class DemoRepositorio implements Repositorio {
         };
       })
       .sort((a, b) => (b.dataInicio ?? '').localeCompare(a.dataInicio ?? ''));
+  }
+
+  // ---------------- Conversões ----------------
+
+  private podeRegistrar(c: Conversao): boolean {
+    const eu = this.usuario?.id;
+    if (!eu) return false;
+    if (this.contas[this.usuario!.email]?.admin) return true;
+    const grupo = this.gruposDemo.find((g) => g.id === c.grupoId && g.eventoId === c.eventoId);
+    const evento = this.eventos.find((e) => e.id === c.eventoId);
+    return Boolean(grupo && evento?.status === 'ativo' && this.historico.has(`${grupo.id}:${eu}`));
+  }
+
+  async enviarConversao(c: Conversao): Promise<void> {
+    exigirConexao();
+    await espera(350);
+    if (this.conversoes.some((x) => x.id === c.id)) return; // já recebido
+    if (!c.consentimento) throw new ErroRecusado('Falta marcar o consentimento.');
+    if (!this.podeRegistrar(c)) {
+      throw new ErroRecusado(
+        'O servidor recusou: o evento pode ter sido encerrado ou você não é mais líder deste grupo. Avise um admin.',
+      );
+    }
+    this.conversoes.push({ ...c, registradoPor: this.usuario!.id });
+    this.ouvintesPlacar.get(c.eventoId)?.forEach((f) => f());
+  }
+
+  async atualizarConversao(c: Conversao): Promise<void> {
+    exigirConexao();
+    await espera(300);
+    const atual = this.conversoes.find((x) => x.id === c.id);
+    const evento = this.eventos.find((e) => e.id === c.eventoId);
+    const ehAdmin = Boolean(this.usuario && this.contas[this.usuario.email]?.admin);
+    if (!atual || (!ehAdmin && (atual.registradoPor !== this.usuario?.id || evento?.status !== 'ativo'))) {
+      throw new ErroRecusado('O servidor não aceitou a correção: o evento pode ter sido encerrado.');
+    }
+    if (c.atualizadoEm < atual.atualizadoEm) return; // correção mais antiga: ignora
+    Object.assign(atual, { ...c, id: atual.id, registradoEm: atual.registradoEm, registradoPor: atual.registradoPor });
+  }
+
+  async buscarConversao(id: string): Promise<Conversao | null> {
+    exigirConexao();
+    await espera();
+    const c = this.conversoes.find((x) => x.id === id && x.registradoPor === this.usuario?.id);
+    if (!c) return null;
+    const { registradoPor: _autor, ...resto } = c;
+    return { ...resto };
+  }
+
+  // ---------------- Placar ----------------
+
+  async placar(eventoId: string): Promise<LinhaPlacar[]> {
+    exigirConexao();
+    await espera(200);
+    return this.gruposDemo
+      .filter((g) => g.eventoId === eventoId)
+      .map((g) => ({
+        grupoId: g.id,
+        grupoNome: g.nome,
+        total: this.conversoes.filter((c) => c.grupoId === g.id).length,
+      }))
+      .sort((a, b) => b.total - a.total || a.grupoNome.localeCompare(b.grupoNome, 'pt-BR', { numeric: true }));
+  }
+
+  ouvirPlacar(eventoId: string, aoMudar: () => void): () => void {
+    const lista = this.ouvintesPlacar.get(eventoId) ?? new Set();
+    lista.add(aoMudar);
+    this.ouvintesPlacar.set(eventoId, lista);
+    return () => lista.delete(aoMudar);
   }
 
   // ---------------- Admin: eventos ----------------

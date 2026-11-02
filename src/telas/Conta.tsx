@@ -15,17 +15,23 @@ import {
 import { logOutOutline, mailOutline, shieldCheckmarkOutline } from 'ionicons/icons';
 import { useSessao } from '../sessao/SessaoContext';
 import { modoDemo } from '../dados';
+import { useFila } from '../fila/FilaContext';
 
 const VERSAO = import.meta.env.PACKAGE_VERSION ?? '0.1.0';
 
 export default function Conta() {
   const { usuario, admin, sair } = useSessao();
   const [alerta] = useIonAlert();
+  const { pendentes, comErro } = useFila();
 
   function confirmarSaida() {
+    const naoEnviados = pendentes + comErro;
     void alerta({
       header: 'Sair do app?',
-      message: 'Para entrar de novo você vai precisar de internet e da sua senha do site.',
+      message:
+        naoEnviados > 0
+          ? `Atenção: ${naoEnviados === 1 ? '1 registro ainda não foi enviado' : `${naoEnviados} registros ainda não foram enviados`}. Eles continuam guardados neste celular e sobem quando você entrar de novo com esta conta. Para entrar de novo você vai precisar de internet.`
+          : 'Para entrar de novo você vai precisar de internet e da sua senha do site.',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         { text: 'Sair', role: 'destructive', handler: () => void sair() },

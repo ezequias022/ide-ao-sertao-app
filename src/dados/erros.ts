@@ -42,3 +42,35 @@ export function traduzirErro(erro: unknown, contexto?: string): ErroApp {
   const base = contexto ? `Não foi possível ${contexto}.` : 'Algo deu errado.';
   return new ErroApp(`${base} Tente de novo em instantes.`, erro);
 }
+
+const REDE = /failed to fetch|network|fetch failed|load failed|networkerror|timeout|aborted|ERR_INTERNET/i;
+const SESSAO = /jwt expired|invalid jwt|refresh token|not authenticated|auth session missing/i;
+
+/**
+ * Para a fila de envio: o erro é passageiro (tentar de novo depois)?
+ * Sem internet, servidor fora do ar ou sessão vencida = sim.
+ * Regra do banco recusou (permissão, evento encerrado, dado inválido) = não.
+ */
+export function ehErroPassageiro(erro: unknown): boolean {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+  const bruto = (erro ?? {}) as ErroBruto & { name?: string };
+  const texto = `${bruto.name ?? ''} ${bruto.message ?? ''} ${bruto.details ?? ''}`;
+  if (REDE.test(texto) || SESSAO.test(texto)) return true;
+  const status = bruto.status ?? 0;
+  return status === 0 || status === 401 || status === 408 || status === 429 || status >= 500;
+}
+
+/** Mensagem para quando o servidor recusa uma conversão. */
+export function motivoRecusa(erro: unknown): string {
+  const bruto = (erro ?? {}) as ErroBruto;
+  const texto = `${bruto.message ?? ''} ${bruto.details ?? ''}`;
+  if (/row-level security/i.test(texto)) {
+    return 'O servidor recusou: o evento pode ter sido encerrado ou você não é mais líder deste grupo. Avise um admin.';
+  }
+  if (/consentimento/i.test(texto)) return 'Falta marcar o consentimento.';
+  if (/whatsapp/i.test(texto)) return 'WhatsApp em formato inválido.';
+  if (/endereco/i.test(texto)) return 'Endereço inválido.';
+  if (/nome/i.test(texto)) return 'Nome inválido.';
+  if (/grupo informado não pertence/i.test(texto)) return 'O grupo não pertence a este evento.';
+  return traduzirErro(erro, 'enviar').message;
+}

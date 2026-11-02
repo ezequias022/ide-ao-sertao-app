@@ -1,4 +1,13 @@
-import type { EventoSite, Grupo, MeuEvento, Pessoa, StatusEvento, Usuario } from './tipos';
+import type {
+  Conversao,
+  EventoSite,
+  Grupo,
+  LinhaPlacar,
+  MeuEvento,
+  Pessoa,
+  StatusEvento,
+  Usuario,
+} from './tipos';
 
 /**
  * Contrato único de acesso a dados. As telas só conhecem esta interface,
@@ -15,6 +24,22 @@ export interface Repositorio {
 
   // Líder
   meusEventos(): Promise<MeuEvento[]>;
+
+  /**
+   * Envia uma conversão nova. Se o mesmo id já estiver no servidor
+   * (confirmação perdida), trata como enviada.
+   * Lança ErroSemConexao (tentar depois) ou ErroRecusado (não adianta tentar).
+   */
+  enviarConversao(c: Conversao): Promise<void>;
+  /** Envia uma correção. Mesmas regras de erro de enviarConversao. */
+  atualizarConversao(c: Conversao): Promise<void>;
+  /** Busca uma conversão já enviada (para corrigir). Precisa de internet. */
+  buscarConversao(id: string): Promise<Conversao | null>;
+
+  // Placar
+  placar(eventoId: string): Promise<LinhaPlacar[]>;
+  /** Avisa quando chega conversão nova no evento. Devolve a função para parar de ouvir. */
+  ouvirPlacar(eventoId: string, aoMudar: () => void): () => void;
 
   // Admin: eventos
   eventosSite(): Promise<EventoSite[]>;

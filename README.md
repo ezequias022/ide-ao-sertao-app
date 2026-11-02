@@ -2,8 +2,8 @@
 
 App interno da **Missão Ide ao Sertão** para os líderes de grupo registrarem as conversões durante os impactos evangelísticos, mesmo sem internet, e para a liderança acompanhar tudo em tempo real e repassar as listas aos pastores locais.
 
-> Status: **v0.1** — login, eventos do líder e área do admin (criar impacto, grupos e escalação de líderes).
-> Próximas etapas: registro offline, placar ao vivo, exportação, APK.
+> Status: **v0.2** — login, área do admin (impacto, grupos, escalação), registro de conversões offline com fila de envio, meus registros com correção e placar ao vivo.
+> Próximas etapas: painel ao vivo e exportação para o admin, APK Android e versão iPhone.
 
 ## Tecnologias
 
@@ -40,7 +40,8 @@ No modo demonstração, entre com `admin@demo` ou `lider@demo` e a senha `demo`.
 ```
 src/
   dados/        acesso a dados: interface única + Supabase + modo demonstração
-  sessao/       login e papel do usuário (admin ou líder)
+  sessao/       login e papel do usuário (admin ou líder), funciona offline
+  fila/         banco local (IndexedDB) e fila de envio das conversões
   telas/        telas do app (admin/ = área da liderança)
   componentes/  peças reutilizadas
   tema/         cores e tipografia da missão
@@ -56,5 +57,7 @@ supabase/
 - **Mesmo banco do site, sem alterar o site.** O app só cria tabelas com prefixo `app_` e lê `eventos` e `perfis` por funções próprias.
 - **Segurança no banco, não no app.** As regras de acesso (RLS) garantem quem vê e quem altera o quê, mesmo que alguém use a API direto. Ver `supabase/LEIA-ME.md`.
 - **Camada de dados trocável.** As telas usam só a interface `Repositorio`; o modo demonstração usa as mesmas regras e permite testar sem tocar no banco real.
+- **Offline primeiro.** Todo registro é salvo no aparelho e entra numa fila. A fila envia sozinha (ao salvar, ao voltar a internet, ao reabrir o app e a cada 30 s), não duplica (o id é gerado no aparelho) e separa erro de rede (tenta de novo) de recusa do servidor (marca para o líder ver).
+- **Dados pessoais saem do celular.** Depois que o servidor confirma, o aparelho guarda só o nome da pessoa.
 - **Chave pública no código.** A chave `publishable` do Supabase é feita para ficar no app; o que protege os dados são as regras de acesso.
 - **Visual único.** Modo `md` do Ionic no Android e no iPhone, tema claro e alto contraste para uso no sol.

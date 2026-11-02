@@ -1,0 +1,101 @@
+.form-conv {
+  padding: 8px 16px 24px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.form-conv-campo {
+  margin-top: 14px;
+}
+.form-conv-rotulo {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+  color: var(--ias-marrom);
+}
+.form-conv-obrig {
+  color: var(--ias-terracota);
+}
+.form-conv ion-input,
+.form-conv ion-textarea {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --border-color: var(--ias-borda);
+  --highlight-color-focused: var(--ias-terracota);
+  min-height: 52px;
+  font-size: 1.05rem;
+}
+.form-conv-campo.com-erro ion-input,
+.form-conv-campo.com-erro ion-textarea {
+  --border-color: var(--ion-color-danger);
+  --border-width: 2px;
+}
+.form-conv-dica,
+.form-conv-erro {
+  margin: 5px 2px 0;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+.form-conv-dica {
+  color: var(--ias-texto-suave);
+}
+.form-conv-erro {
+  color: var(--ion-color-danger);
+  font-weight: 500;
+}
+
+.form-conv-linha {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+}
+
+.form-conv-responsavel {
+  margin: 18px 0 0;
+  padding: 4px 14px 14px;
+  border: 1.5px dashed var(--ias-amarelo-escuro);
+  border-radius: 14px;
+  background: var(--ias-amarelo-suave);
+}
+.form-conv-responsavel legend {
+  padding: 0 6px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--ias-marrom);
+}
+.form-conv-responsavel > p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--ias-texto-suave);
+}
+
+.form-conv-consent {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 20px;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid var(--ias-borda);
+  border-radius: 14px;
+  line-height: 1.4;
+  font-size: 0.97rem;
+  cursor: pointer;
+}
+.form-conv-consent ion-checkbox {
+  --size: 26px;
+  --checkbox-background-checked: var(--ias-terracota);
+  --border-color-checked: var(--ias-terracota);
+  flex: none;
+  margin-top: 1px;
+}
+.form-conv-consent.com-erro {
+  border: 2px solid var(--ion-color-danger);
+}
+
+.form-conv .ias-aviso {
+  margin: 16px 0 0;
+}
+.form-conv-botao {
+  margin-top: 20px;
+}

@@ -60,3 +60,43 @@ export class ErroApp extends Error {
     this.name = 'ErroApp';
   }
 }
+
+/** Uma pessoa alcançada, como o líder preenche no formulário. */
+export interface Conversao {
+  id: string; // gerado no aparelho: reenviar não duplica
+  eventoId: string;
+  grupoId: string;
+  nome: string;
+  apelido: string | null;
+  idade: number | null;
+  whatsapp: string | null; // só dígitos: DDD + número
+  endereco: string;
+  responsavelNome: string | null;
+  responsavelTelefone: string | null;
+  consentimento: boolean;
+  registradoEm: string; // ISO, hora do aparelho
+  atualizadoEm: string; // ISO, última correção
+}
+
+/** Linha do placar: só contagem, sem dados pessoais. */
+export interface LinhaPlacar {
+  grupoId: string;
+  grupoNome: string;
+  total: number;
+}
+
+/** Erro que o servidor recusou de propósito (não adianta tentar de novo). */
+export class ErroRecusado extends ErroApp {
+  constructor(message: string, causa?: unknown) {
+    super(message, causa);
+    this.name = 'ErroRecusado';
+  }
+}
+
+/** Sem conexão: o registro fica na fila e é reenviado depois. */
+export class ErroSemConexao extends ErroApp {
+  constructor(causa?: unknown) {
+    super('Sem conexão com a internet.', causa);
+    this.name = 'ErroSemConexao';
+  }
+}

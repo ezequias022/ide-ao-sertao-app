@@ -1,10 +1,14 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import type { Repositorio } from './repositorio';
-import { traduzirErro } from './erros';
+import { ehErroPassageiro, motivoRecusa, traduzirErro } from './erros';
 import {
   ErroApp,
+  ErroRecusado,
+  ErroSemConexao,
+  type Conversao,
   type EventoSite,
   type Grupo,
+  type LinhaPlacar,
   type MeuEvento,
   type Pessoa,
   type StatusEvento,
@@ -31,6 +35,68 @@ interface LinhaGrupo {
 
 function paraGrupo(l: LinhaGrupo): Grupo {
   return { id: l.id, eventoId: l.evento_id, nome: l.nome, liderId: l.lider_id };
+}
+
+const COLUNAS_CONVERSAO =
+  'id, evento_id, grupo_id, nome, apelido, idade, whatsapp, endereco, responsavel_nome, responsavel_telefone, consentimento, registrado_em, atualizado_em';
+
+interface LinhaConversao {
+  id: string;
+  evento_id: string;
+  grupo_id: string;
+  nome: string;
+  apelido: string | null;
+  idade: number | null;
+  whatsapp: string | null;
+  endereco: string;
+  responsavel_nome: string | null;
+  responsavel_telefone: string | null;
+  consentimento: boolean;
+  registrado_em: string;
+  atualizado_em: string;
+}
+
+function paraLinha(c: Conversao): LinhaConversao {
+  return {
+    id: c.id,
+    evento_id: c.eventoId,
+    grupo_id: c.grupoId,
+    nome: c.nome,
+    apelido: c.apelido,
+    idade: c.idade,
+    whatsapp: c.whatsapp,
+    endereco: c.endereco,
+    responsavel_nome: c.responsavelNome,
+    responsavel_telefone: c.responsavelTelefone,
+    consentimento: c.consentimento,
+    registrado_em: c.registradoEm,
+    atualizado_em: c.atualizadoEm,
+  };
+}
+
+function paraConversao(l: LinhaConversao): Conversao {
+  return {
+    id: l.id,
+    eventoId: l.evento_id,
+    grupoId: l.grupo_id,
+    nome: l.nome,
+    apelido: l.apelido,
+    idade: l.idade,
+    whatsapp: l.whatsapp,
+    endereco: l.endereco,
+    responsavelNome: l.responsavel_nome,
+    responsavelTelefone: l.responsavel_telefone,
+    consentimento: l.consentimento,
+    registradoEm: l.registrado_em,
+    atualizadoEm: l.atualizado_em,
+  };
+}
+
+/** Converte a falha de envio em ErroSemConexao (tentar depois) ou ErroRecusado. */
+function erroDeEnvio(erro: unknown, status?: number): ErroApp {
+  const comStatus = { ...(erro as object), status };
+  if (ehErroPassageiro(comStatus)) return new ErroSemConexao(erro);
+  return new ErroRecusado(motivoRecusa(erro), erro);
 }
 
 export class SupabaseRepositorio implements Repositorio {
@@ -99,6 +165,82 @@ export class SupabaseRepositorio implements Repositorio {
       grupoNome: String(l.grupo_nome ?? ''),
       liderAtual: Boolean(l.lider_atual),
     }));
+  }
+
+  // ---------------- Conversões ----------------
+
+  async enviarConversao(c: Conversao): Promise<void> {
+    let resposta;
+    try {
+      resposta = await this.db.from('app_conversoes').insert(paraLinha(c));
+    } catch (e) {
+      throw new ErroSemConexao(e);
+    }
+    const { error, status } = resposta;
+    if (!error) return;
+
+    // Mesmo id já no servidor: a confirmação anterior se perdeu. Já está salvo.
+    if (error.code === '23505' && /app_conversoes_pkey/.test(error.message)) {
+      const { data } = await this.db.from('app_conversoes').select('id').eq('id', c.id).maybeSingle();
+      if (data) return;
+    }
+    throw erroDeEnvio(error, status);
+  }
+
+  async atualizarConversao(c: Conversao): Promise<void> {
+    const { id, registrado_em: _r, ...campos } = paraLinha(c);
+    let resposta;
+    try {
+      resposta = await this.db.from('app_conversoes').update(campos).eq('id', id).select('id');
+    } catch (e) {
+      throw new ErroSemConexao(e);
+    }
+    const { data, error, status } = resposta;
+    if (error) throw erroDeEnvio(error, status);
+    if (!data || data.length === 0) {
+      throw new ErroRecusado('O servidor não aceitou a correção: o evento pode ter sido encerrado.');
+    }
+  }
+
+  async buscarConversao(id: string): Promise<Conversao | null> {
+    const data = conferir(
+      await this.db.from('app_conversoes').select(COLUNAS_CONVERSAO).eq('id', id).maybeSingle(),
+      'carregar o registro',
+    ) as LinhaConversao | null;
+    return data ? paraConversao(data) : null;
+  }
+
+  // ---------------- Placar ----------------
+
+  async placar(eventoId: string): Promise<LinhaPlacar[]> {
+    const data = conferir(
+      await this.db.rpc('app_placar', { p_evento_id: eventoId }),
+      'carregar o placar',
+    ) as Array<{ grupo_id: string; grupo_nome: string; total: number | string }>;
+    return data.map((l) => ({ grupoId: l.grupo_id, grupoNome: l.grupo_nome, total: Number(l.total) }));
+  }
+
+  ouvirPlacar(eventoId: string, aoMudar: () => void): () => void {
+    let canal: ReturnType<SupabaseClient['channel']> | null = null;
+    let parado = false;
+
+    void (async () => {
+      // Canal privado: o token da sessão é exigido pelas regras do banco.
+      await this.db.realtime.setAuth();
+      if (parado) return;
+      canal = this.db
+        .channel(`placar:${eventoId}`, { config: { private: true } })
+        .on('broadcast', { event: 'nova_conversao' }, () => aoMudar())
+        .subscribe((estado) => {
+          // Ao reconectar, pode ter chegado coisa enquanto estava fora.
+          if (estado === 'SUBSCRIBED') aoMudar();
+        });
+    })();
+
+    return () => {
+      parado = true;
+      if (canal) void this.db.removeChannel(canal);
+    };
   }
 
   // ---------------- Admin: eventos ----------------
