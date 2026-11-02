@@ -34,7 +34,13 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: gradle
-      - uses: android-actions/setup-android@v3
+      # O runner do GitHub já vem com o Android SDK; só garante a plataforma usada pelo app.
+      - name: Preparar Android SDK
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" --install "platforms;android-36" "build-tools;36.0.0" > /dev/null
+          echo "SDK em $ANDROID_HOME"
 
       - name: Versão
         id: versao
