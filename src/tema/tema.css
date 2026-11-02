@@ -1,0 +1,216 @@
+/* =====================================================================
+   Tema do app — mesma paleta do site da missão (terracota, amarelo,
+   marrom e osso). Pensado para uso na rua: alto contraste, alvos de
+   toque grandes e sempre claro (tela escura some no sol).
+   ===================================================================== */
+
+:root {
+  --ias-terracota: #b5541a;
+  --ias-terracota-escuro: #8c3f12;
+  --ias-amarelo: #f5c200;
+  --ias-amarelo-escuro: #c49a00;
+  --ias-amarelo-suave: #fff8d6;
+  --ias-marrom: #3d2b1f;
+  --ias-marrom-suave: #6b4c3b;
+  --ias-osso: #faf6ee;
+  --ias-osso-escuro: #f0e9dc;
+  --ias-texto: #1f1208;
+  --ias-texto-suave: #5c3d2e;
+  --ias-borda: #e4d9c6;
+
+  --ias-fonte-titulo: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --ias-fonte: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Ionic */
+  --ion-font-family: var(--ias-fonte);
+  --ion-background-color: var(--ias-osso);
+  --ion-background-color-rgb: 250, 246, 238;
+  --ion-text-color: var(--ias-texto);
+  --ion-text-color-rgb: 31, 18, 8;
+  --ion-toolbar-background: var(--ias-osso);
+  --ion-toolbar-color: var(--ias-texto);
+  --ion-toolbar-border-color: var(--ias-borda);
+  --ion-tab-bar-background: #ffffff;
+  --ion-tab-bar-border-color: var(--ias-borda);
+  --ion-tab-bar-color: var(--ias-marrom-suave);
+  --ion-tab-bar-color-selected: var(--ias-terracota);
+  --ion-item-background: #ffffff;
+  --ion-item-border-color: var(--ias-borda);
+  --ion-card-background: #ffffff;
+  --ion-border-color: var(--ias-borda);
+
+  --ion-color-primary: #b5541a;
+  --ion-color-primary-rgb: 181, 84, 26;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #8c3f12;
+  --ion-color-primary-tint: #bc6531;
+
+  --ion-color-secondary: #f5c200;
+  --ion-color-secondary-rgb: 245, 194, 0;
+  --ion-color-secondary-contrast: #1f1208;
+  --ion-color-secondary-contrast-rgb: 31, 18, 8;
+  --ion-color-secondary-shade: #c49a00;
+  --ion-color-secondary-tint: #f6c81a;
+
+  --ion-color-success: #2d6a2d;
+  --ion-color-success-rgb: 45, 106, 45;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #285d28;
+  --ion-color-success-tint: #427942;
+
+  --ion-color-danger: #b42318;
+  --ion-color-danger-rgb: 180, 35, 24;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #9e1f15;
+  --ion-color-danger-tint: #bc392f;
+
+  --ion-color-medium: #6b4c3b;
+  --ion-color-medium-rgb: 107, 76, 59;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #5e4334;
+  --ion-color-medium-tint: #7a5e4f;
+
+  --ion-color-dark: #3d2b1f;
+  --ion-color-dark-rgb: 61, 43, 31;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #36261b;
+  --ion-color-dark-tint: #504035;
+
+  --ion-color-light: #f0e9dc;
+  --ion-color-light-rgb: 240, 233, 220;
+  --ion-color-light-contrast: #1f1208;
+  --ion-color-light-contrast-rgb: 31, 18, 8;
+  --ion-color-light-shade: #d3cdc2;
+  --ion-color-light-tint: #f2ebe0;
+}
+
+/* Tipografia */
+ion-title,
+.ias-titulo {
+  font-family: var(--ias-fonte-titulo);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+ion-title {
+  font-size: 1.3rem;
+}
+
+/* Botões grandes para usar com uma mão, na rua */
+ion-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  min-height: 48px;
+}
+ion-button[size='large'] {
+  min-height: 56px;
+  font-size: 1.05rem;
+}
+
+ion-card {
+  border-radius: 14px;
+  box-shadow: none;
+  border: 1px solid var(--ias-borda);
+  margin-inline: 16px;
+}
+
+ion-searchbar {
+  --border-radius: 12px;
+  --box-shadow: none;
+  --background: #ffffff;
+}
+
+/* Seções */
+.ias-secao {
+  margin: 20px 16px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ias-texto-suave);
+}
+
+.ias-vazio {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--ias-texto-suave);
+  line-height: 1.5;
+}
+.ias-vazio > ion-icon {
+  font-size: 48px;
+  color: var(--ias-amarelo-escuro);
+  margin-bottom: 8px;
+}
+.ias-vazio h2 {
+  font-family: var(--ias-fonte-titulo);
+  color: var(--ias-texto);
+  font-size: 1.4rem;
+  margin: 4px 0 6px;
+}
+
+.ias-aviso {
+  margin: 12px 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ias-amarelo-suave);
+  border: 1px solid #f0dc8a;
+  color: var(--ias-marrom);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.ias-aviso ion-icon {
+  flex: none;
+  font-size: 20px;
+  margin-top: 1px;
+  color: var(--ias-amarelo-escuro);
+}
+.ias-aviso.erro {
+  background: #fdecea;
+  border-color: #f5c6c1;
+  color: #7a1a12;
+}
+.ias-aviso.erro ion-icon {
+  color: var(--ion-color-danger);
+}
+
+.ias-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: var(--ias-osso-escuro);
+  color: var(--ias-marrom);
+  flex: none;
+}
+.ias-avatar.vazio {
+  background: transparent;
+  border: 1.5px dashed var(--ias-borda);
+  color: var(--ias-texto-suave);
+}
+
+ion-badge {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 5px 9px;
+  border-radius: 999px;
+}
+
+.conta-rodape {
+  text-align: center;
+  color: var(--ias-texto-suave);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 28px 16px;
+}

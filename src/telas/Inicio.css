@@ -1,0 +1,52 @@
+.evento-cartao ion-card-content {
+  padding: 16px;
+}
+.evento-cartao.destaque {
+  border: 2px solid var(--ias-terracota);
+  background: linear-gradient(180deg, #fff 0%, #fffaf0 100%);
+}
+.evento-linha-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.evento-ex {
+  font-size: 0.8rem;
+  color: var(--ias-texto-suave);
+}
+.evento-cartao .evento-nome {
+  font-size: 1.45rem;
+  color: var(--ias-texto);
+  margin: 10px 0 8px;
+  line-height: 1.2;
+}
+.evento-cartao .evento-info {
+  display: grid;
+  gap: 6px;
+  color: var(--ias-texto-suave);
+  font-size: 0.95rem;
+}
+.evento-cartao .evento-info span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.evento-cartao .evento-info ion-icon {
+  font-size: 18px;
+  color: var(--ias-terracota);
+  flex: none;
+}
+.evento-cartao .evento-info strong {
+  color: var(--ias-texto);
+}
+.evento-proximo {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ias-borda);
+  font-size: 0.88rem;
+  color: var(--ias-texto-suave);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

@@ -1,0 +1,86 @@
+.admin-lista {
+  margin-top: 0;
+  border-radius: 14px;
+  border: 1px solid var(--ias-borda);
+}
+.admin-lista ion-item {
+  --min-height: 68px;
+  --padding-start: 14px;
+}
+.admin-lista h2 {
+  font-weight: 600;
+  font-size: 1.02rem;
+  margin-bottom: 3px;
+}
+.admin-lista p {
+  color: var(--ias-texto-suave);
+  font-size: 0.88rem;
+}
+.admin-evento ion-badge {
+  margin-inline: 6px 2px;
+}
+
+.detalhe-topo {
+  padding: 18px 16px 4px;
+}
+.detalhe-topo h1 {
+  font-size: 1.75rem;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: var(--ias-marrom);
+}
+.detalhe-topo .evento-info {
+  display: grid;
+  gap: 6px;
+  color: var(--ias-texto-suave);
+}
+.detalhe-topo .evento-info span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.detalhe-topo .evento-info ion-icon {
+  color: var(--ias-terracota);
+  font-size: 18px;
+}
+
+.detalhe-status {
+  margin: 0 16px;
+}
+.detalhe-status ion-segment {
+  --background: var(--ias-osso-escuro);
+  border-radius: 12px;
+}
+.detalhe-status ion-segment-button {
+  --indicator-color: #ffffff;
+  --color-checked: var(--ias-terracota-escuro);
+  --border-radius: 10px;
+  min-height: 44px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.detalhe-dica {
+  margin: 8px 2px 0;
+  font-size: 0.86rem;
+  color: var(--ias-texto-suave);
+}
+
+.detalhe-grupos-cab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-right: 6px;
+}
+.detalhe-grupos-cab .ias-secao {
+  margin-bottom: 8px;
+}
+
+.grupo-item .ias-avatar {
+  margin-inline-end: 12px;
+}
+.grupo-sem-lider {
+  color: var(--ion-color-danger) !important;
+  font-weight: 500;
+}
