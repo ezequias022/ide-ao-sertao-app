@@ -52,7 +52,11 @@ export function FilaProvider({ children }: { children: ReactNode }) {
     try {
       const r = await sincronizador.enviarPendentes(id);
       if (r.enviados > 0) setUltimoEnvio(new Date());
-      if (!r.semConexao) setOnline(navigator.onLine);
+      if (!r.semConexao) {
+        setOnline(navigator.onLine);
+        // Com internet: tira do histórico o que o admin apagou no servidor.
+        await sincronizador.reconciliar(id);
+      }
     } finally {
       setEnviando(false);
     }

@@ -204,6 +204,28 @@ export class SupabaseRepositorio implements Repositorio {
     }
   }
 
+  async idsDasMinhasConversoes(): Promise<string[]> {
+    const { data: sessao } = await this.db.auth.getSession();
+    const eu = sessao.session?.user.id;
+    if (!eu) throw new ErroSemConexao();
+    const ids: string[] = [];
+    const PAGINA = 1000;
+    for (let inicio = 0; ; inicio += PAGINA) {
+      const data = conferir(
+        await this.db
+          .from('app_conversoes')
+          .select('id')
+          .eq('registrado_por', eu)
+          .order('id')
+          .range(inicio, inicio + PAGINA - 1),
+        'conferir seus registros',
+      ) as Array<{ id: string }>;
+      ids.push(...data.map((l) => l.id));
+      if (data.length < PAGINA) break;
+    }
+    return ids;
+  }
+
   async buscarConversao(id: string): Promise<Conversao | null> {
     const data = conferir(
       await this.db.from('app_conversoes').select(COLUNAS_CONVERSAO).eq('id', id).maybeSingle(),

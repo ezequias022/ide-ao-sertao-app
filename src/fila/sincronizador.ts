@@ -117,6 +117,35 @@ export class Sincronizador {
     return resultado;
   }
 
+  /**
+   * Tira do histórico do celular os registros que não existem mais no servidor
+   * (o admin apagou, por exemplo para limpar um teste).
+   * Só mexe no que já foi confirmado como enviado: o que está na fila nunca é tocado.
+   * Sem internet, não faz nada.
+   */
+  async reconciliar(usuarioId: string): Promise<number> {
+    let noServidor: Set<string>;
+    try {
+      noServidor = new Set(await this.repo.idsDasMinhasConversoes());
+    } catch {
+      return 0;
+    }
+    return this.banco.transaction('rw', this.banco.fila, this.banco.enviados, async () => {
+      const locais = await this.banco.enviados.where('usuarioId').equals(usuarioId).toArray();
+      const apagados: string[] = [];
+      for (const e of locais) {
+        if (noServidor.has(e.id)) continue;
+        // Correção na fila de um registro apagado: o servidor recusaria; descarta junto.
+        const naFila = await this.banco.fila.get(e.id);
+        if (naFila && naFila.operacao === 'inserir') continue; // ainda vai subir: não é apagado
+        if (naFila) await this.banco.fila.delete(e.id);
+        apagados.push(e.id);
+      }
+      await this.banco.enviados.bulkDelete(apagados);
+      return apagados.length;
+    });
+  }
+
   /** Servidor confirmou: tira da fila e guarda só o nome. */
   private async confirmar(item: ItemFila): Promise<void> {
     await this.banco.transaction('rw', this.banco.fila, this.banco.enviados, async () => {

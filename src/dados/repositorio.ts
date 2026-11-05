@@ -35,6 +35,11 @@ export interface Repositorio {
   enviarConversao(c: Conversao): Promise<void>;
   /** Envia uma correção. Mesmas regras de erro de enviarConversao. */
   atualizarConversao(c: Conversao): Promise<void>;
+  /**
+   * Ids de todas as conversões que o usuário logado registrou e que ainda existem no servidor.
+   * Serve para tirar do histórico do celular o que o admin apagou. Precisa de internet.
+   */
+  idsDasMinhasConversoes(): Promise<string[]>;
   /** Busca uma conversão já enviada (para corrigir). Precisa de internet. */
   buscarConversao(id: string): Promise<Conversao | null>;
 

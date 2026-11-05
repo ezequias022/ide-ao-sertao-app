@@ -40,6 +40,10 @@ function servidorFalso() {
       if (modo === 'offline') throw new ErroSemConexao();
       recebidos.set(c.id, { ...c });
     }),
+    idsDasMinhasConversoes: vi.fn(async () => {
+      if (modo === 'offline') throw new ErroSemConexao();
+      return [...recebidos.keys()];
+    }),
   } as unknown as Repositorio;
   return { repo, recebidos, setModo: (m: typeof modo) => (modo = m) };
 }
@@ -153,5 +157,57 @@ describe('Sincronizador (fila offline)', () => {
     const r = await sync.enviarPendentes(U);
     expect(r.enviados).toBe(1);
     expect(await banco.fila.count()).toBe(1);
+  });
+
+  it('tira do histórico o que o admin apagou no servidor', async () => {
+    const s = servidorFalso();
+    const sync = new Sincronizador(banco, s.repo);
+    const a = conversao('Teste A', 1);
+    const b = conversao('Real B', 2);
+    await sync.registrar(U, a);
+    await sync.registrar(U, b);
+    await sync.enviarPendentes(U);
+    expect(await banco.enviados.count()).toBe(2);
+
+    s.recebidos.delete(a.id); // admin apagou o teste
+    expect(await sync.reconciliar(U)).toBe(1);
+    expect((await banco.enviados.toArray()).map((e) => e.nome)).toEqual(['Real B']);
+  });
+
+  it('sem internet não apaga nada do histórico', async () => {
+    const s = servidorFalso();
+    const sync = new Sincronizador(banco, s.repo);
+    await sync.registrar(U, conversao('A', 1));
+    await sync.enviarPendentes(U);
+    s.recebidos.clear();
+    s.setModo('offline');
+    expect(await sync.reconciliar(U)).toBe(0);
+    expect(await banco.enviados.count()).toBe(1);
+  });
+
+  it('nunca mexe em registro que ainda está na fila para subir', async () => {
+    const s = servidorFalso();
+    s.setModo('offline');
+    const sync = new Sincronizador(banco, s.repo);
+    await sync.registrar(U, conversao('Pendente', 1));
+    s.setModo('ok');
+    // servidor ainda não tem o registro (não subiu), e a reconciliação roda antes do envio
+    expect(await sync.reconciliar(U)).toBe(0);
+    expect(await banco.fila.count()).toBe(1);
+  });
+
+  it('registro apagado com correção na fila: descarta a correção também', async () => {
+    const s = servidorFalso();
+    const sync = new Sincronizador(banco, s.repo);
+    const a = conversao('Maria', 1);
+    await sync.registrar(U, a);
+    await sync.enviarPendentes(U);
+    s.setModo('offline');
+    await sync.corrigir(U, { ...a, apelido: 'Lia', atualizadoEm: new Date().toISOString() });
+    s.setModo('ok');
+    s.recebidos.delete(a.id);
+    expect(await sync.reconciliar(U)).toBe(1);
+    expect(await banco.fila.count()).toBe(0);
+    expect(await banco.enviados.count()).toBe(0);
   });
 });

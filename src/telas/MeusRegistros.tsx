@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   IonButton,
   IonContent,
@@ -39,7 +40,12 @@ const ROTULO: Record<Status, string> = { enviado: 'Enviado', pendente: 'Aguardan
 
 export default function MeusRegistros() {
   const { usuario } = useSessao();
-  const { tentarDeNovo, descartar } = useFila();
+  const { tentarDeNovo, descartar, enviarAgora } = useFila();
+
+  // Ao abrir: envia o que estiver pendente e confere com o servidor o que o admin apagou.
+  useEffect(() => {
+    void enviarAgora();
+  }, [enviarAgora]);
   const [acoes] = useIonActionSheet();
   const [alerta] = useIonAlert();
   const router = useIonRouter();

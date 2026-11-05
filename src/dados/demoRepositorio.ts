@@ -203,6 +203,12 @@ export class DemoRepositorio implements Repositorio {
     this.avisar(c.eventoId);
   }
 
+  async idsDasMinhasConversoes(): Promise<string[]> {
+    exigirConexao();
+    await espera(150);
+    return this.conversoes.filter((c) => c.registradoPor === this.usuario?.id).map((c) => c.id);
+  }
+
   async buscarConversao(id: string): Promise<Conversao | null> {
     exigirConexao();
     await espera();
